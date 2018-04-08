@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://js.arcgis.com/4.6/esri/css/main.css">
+        <link rel="stylesheet" href="https://js.arcgis.com/3.22/dijit/themes/claro/claro.css">
+        <link rel="stylesheet" href="https://js.arcgis.com/3.22/esri/css/esri.css">
+        <script src="https://js.arcgis.com/4.6/"></script>
+        <script src="https://api.data.charitynavigator.org/v2"></script>
+        
+        <style>
+            html,
+            body,
+            #viewDiv {
+                padding: 0;
+                margin: 0;
+                height: 100%;
+                width: 100%;
+            }
+
+            .hidden {
+                display: none !important;
+            }
+
+            .fadeOut{
+                visibility: hidden;
+                opacity: 0;
+                transition: visibility 0s 1s, opacity 1s linear;
+            }
+
+            .esri-component.esri-search.esri-widget {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+            }
+
+            .overlay {
+                display: flex;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                z-index:1;
+            }
+
+            .inner {
+                align-self: center;
+                padding: 1rem;
+                background-color: rgba(0,0,0,0.75);
+            }
+
+            .instructions {
+                padding-bottom: 0.5rem;
+                font-family: "Avenir Next W00","Helvetica Neue",Helvetica,Arial,sans-serif;
+                color: #dcdcdc;
+            }
+
+            .embed-container {position: relative; padding-bottom: 80%; height: 0; max-width: 100%;} 
+            .embed-container iframe, 
+            .embed-container object, 
+            .embed-container 
+            iframe{position: absolute; top: 0; left: 0; width: 100%; height: 100%;} 
+            small{position: absolute; z-index: 40; bottom: 0; margin-bottom: -15px;}
+
+        </style>
+
+        <script>
+
+            var charityLocation = "";
+
+            require([
+                        "esri/Map",
+                        "esri/views/SceneView",
+                        "esri/views/MapView",
+                        "esri/widgets/Search",
+                        "dojo/dom-construct",
+                        "dojo/dom-class",
+                        "dojo/domReady!"            
+            ], 
+            function(Map, SceneView, MapView, Search, domConstruct, domClass){
+                var map = new Map({
+                    basemap: "dark-gray"
+                });
+                
+                var viewOptions = {
+                    container: "viewDiv",
+                    map: map,
+                    center: [-96.0, 38.0],
+                    zoom: 5.0
+                }
+                
+                var view = new MapView(viewOptions);
+
+                view.then(function(){
+                    console.log('ready');
+
+                    var searchWidget = new Search({
+                        container: "searchWrapper",
+                        view: view
+                    });
+
+                    searchWidget.on('search-start', function() {
+                        domClass.add("overlay", "fadeOut");
+                    });
+
+                    searchWidget.on('select-result', function() {
+                        charityLocation = searchWidget.selectedResult.name;
+                        window.alert(name);
+                    });
+
+                }.bind(this));
+
+            });
+
+            function httpGet(theUrl){
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open( "GET", theUrl, false ); // false for synchronous request
+                xmlHttp.send( null );
+                return xmlHttp.responseText;
+            }
+
+        </script>
+
+    </head>
+    
+    <body>
+       
+        <script type="text/javascript">
+            var dojoConfig = {
+                async: true
+        };
+        </script>
+              
+        <div id="overlay" class="overlay">
+            <div class="inner">
+                <div class="instructions">
+                    Where do you want to look?
+                </div>
+                <div id="searchWrapper">
+                <!-- search widget will get placed here programatically -->
+                </div>
+            </div>
+        </div>
+  
+        <div class="embed-container" id = "viewDiv">
+            <iframe 
+                width="500" height="400" frameborder="0" scrolling="no" 
+                marginheight="0" marginwidth="0" title="Education in USA" 
+                src="//andrew-sumner.maps.arcgis.com/apps/Embed/index.html?webmap=fa7206734de1463b910fa7bee18ebb9b&amp;extent=-158.3961,6.8713,-28.5817,63.4846&zoom=true&previewImage=false&scale=true&details=true&legendlayers=true&active_panel=details&disable_scroll=true&theme=light">
+            </iframe>
+        </div>
+        <div id="testingDiv"></div>
+        <script>
+            var charityState = "MD";
+            var charityUrl = "https://api.data.charitynavigator.org/v2/Organizations?app_id=ecaf79d5&app_key=3fbd8a6d55aed6a0173ba43ec3f16d25&state=" + charityState;
+            var charityContent = httpGet(charityUrl);
+            document.getElementById("testingDiv").innerHTML = charityState + " " + charityContent;
+        </script>
+    </body>
+
+</html>
